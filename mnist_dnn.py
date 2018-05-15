@@ -6,6 +6,7 @@ import tensorflow as tf
 import math
 import pickle as p
 import os
+import tfHelper as th
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 learning_rate = 0.0001
@@ -75,29 +76,6 @@ def getDat(filename, type=None):
 		elif type == 'Test':
 			return
 
-def runSession(learning_rate = 0.0001, epochs = 10, batch_size=100, keep_prob=0.9, w2f = False):
-	init = tf.global_variables_initializer()
-	with tf.Session() as sess:
-		sess.run(init)
-		total_batch = int(X_train.shape[0]/batch_size)
-		for epoch in range(epochs):
-			temp = 0
-			for i in range(total_batch):
-				# X_batch, y_batch = mnist.train.next_batch(batch_size=i)
-				X_batch = X_train[i*batch_size:(i+1)*batch_size,:]
-				y_batch = y_train[i*batch_size:(i+1)*batch_size,:]
-				_, c = sess.run([optimizer,cross_entropy], feed_dict={X:X_batch, y:y_batch})
-				if math.isnan(c)==False:
-					temp = temp + c/total_batch
-				else:
-					print('Nope')
-			print("Epoch:", (epoch + 1), "cost =", "{:.3f}".format(temp))
-		acc = sess.run(accuracy, feed_dict={X: X_val, y: y_val})
-		print("Accuracy of validation set was", acc)
-		if w2f:
-			predict_n_format('test.pickle', sess)
-		return acc
-
 def hyperSearch():
 	max = {'learning_rate': 0, 'keep_prob': 0, 'batch_size': 0, 'epochs': 0, 'acc': 0}
 	init = tf.global_variables_initializer()
@@ -130,12 +108,7 @@ def hyperSearch():
 					print(max)
 	return max
 
-
-X_train, y_train, X_val, y_val = getDat('train', 'Train')
-
 # mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-
-print("Read in complete!")
 
 
 X = tf.placeholder(tf.float32, [None, 784])
@@ -205,8 +178,7 @@ accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 # 	best_epoch.update({epoch: temp})
 # print(min(best_epoch, key=best_epoch.get))
 #TODO: Make function to perform hyperparamter search
-max = hyperSearch()
-print(max)
+print(th.runSession(file='train', fileType='Train'))
 
 
 
